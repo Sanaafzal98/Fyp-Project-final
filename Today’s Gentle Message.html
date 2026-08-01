@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Elara AI – Mood System</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI', sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #ffe4ec, #ffd1dc);
+    padding:30px;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+}
+
+.section{
+    width:100%;
+    max-width:1100px;
+    min-height:80vh;               /* ⭐ height ka main fix */
+    margin:40px auto;
+    background:linear-gradient(
+        to bottom,
+        #fff0f6 0%,
+        #ffe6f0 40%,
+        #ffd1dc 100%
+    );
+    padding:20px 40px 30px;        /* neeche zyada space */
+    border-radius:28px;
+    box-shadow:0 25px 60px rgba(255,105,180,0.35);
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+}
+
+/* ---------- TITLE ---------- */
+h2{
+    color:#b03060;
+    margin-bottom:15px;
+}
+
+/* ---------- MESSAGE ---------- */
+.message-box{
+    background:linear-gradient(135deg,#ffd6e8,#fff);
+    padding:18px;
+    border-radius:16px;
+    margin-bottom:30px;
+    font-size:18px;
+    color:#7a1f3d;
+    box-shadow:0 8px 20px rgba(255,20,147,0.2);
+}
+
+/* ---------- MOOD SELECTOR ---------- */
+.moods{
+    display:flex;
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.mood{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    font-size:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    background:#ffd6e8;
+    transition:all 0.4s ease;
+    box-shadow:0 8px 20px rgba(255,20,147,0.3);
+}
+
+.mood:hover{
+    transform:scale(1.2) rotate(10deg);
+    background:#ff8fb1;
+}
+
+/* ---------- HISTORY ---------- */
+.history{
+    display:flex;
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.history div{
+    flex:1;
+    background:#fff;
+    padding:15px;
+    border-radius:14px;
+    text-align:center;
+    box-shadow:0 8px 20px rgba(255,20,147,0.2);
+    color:#b03060;
+}
+
+/* ---------- BADGES ---------- */
+.badges{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.badge{
+    background:#ffd6e8;
+    padding:15px 22px;
+    border-radius:30px;
+    font-weight:600;
+    color:#7a1f3d;
+    opacity:0.4;
+    transition:all 0.4s ease;
+}
+
+.badge.active{
+    opacity:1;
+    background:#ff8fb1;
+    color:white;
+    box-shadow:0 8px 20px rgba(255,20,147,0.4);
+    transform:scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<div class="section">
+
+    <h2>💗 Today’s Gentle Message</h2>
+    <div class="message-box" id="message"></div>
+
+    <h2>🌸 How are you feeling today?</h2>
+    <div class="moods">
+        <div class="mood" onclick="selectMood('😊')">😊</div>
+        <div class="mood" onclick="selectMood('😐')">😐</div>
+        <div class="mood" onclick="selectMood('😔')">😔</div>
+        <div class="mood" onclick="selectMood('😟')">😟</div>
+        <div class="mood" onclick="selectMood('😄')">😄</div>
+    </div>
+
+    <h2>📊 Emotional History</h2>
+    <div class="history">
+        <div>Today<br><strong id="today">–</strong></div>
+        <div>Yesterday<br><strong id="yesterday">–</strong></div>
+        <div>Last Mood<br><strong id="last">–</strong></div>
+    </div>
+
+    <h2>🏆 Self-Care Badges</h2>
+    <div class="badges">
+        <div class="badge" id="badge1">🌸 First Check-in</div>
+        <div class="badge" id="badge2">💗 3 Days Self-Care</div>
+        <div class="badge" id="badge3">✨ Healing Started</div>
+    </div>
+
+</div>
+
+<script>
+// ---------- MOTIVATIONAL MESSAGES ----------
+const messages = [
+    "You are doing better than you think 💕",
+    "Take a deep breath, you’re safe here 🌸",
+    "Small steps still move you forward ✨",
+    "Your feelings are valid and important 💗",
+    "Healing is not linear — and that’s okay 🌷"
+];
+
+document.getElementById("message").innerText =
+    messages[Math.floor(Math.random() * messages.length)];
+
+// ---------- MOOD LOGIC ----------
+let moodHistory = JSON.parse(localStorage.getItem("moods")) || [];
+
+function selectMood(mood){
+    moodHistory.push({ mood, date:new Date().toDateString() });
+    localStorage.setItem("moods", JSON.stringify(moodHistory));
+    updateUI();
+}
+
+// ---------- UPDATE UI ----------
+function updateUI(){
+    const todayMood = moodHistory[moodHistory.length - 1]?.mood || "–";
+    const yesterdayMood = moodHistory[moodHistory.length - 2]?.mood || "–";
+    const lastMood = moodHistory[0]?.mood || "–";
+
+    document.getElementById("today").innerText = todayMood;
+    document.getElementById("yesterday").innerText = yesterdayMood;
+    document.getElementById("last").innerText = lastMood;
+
+    // BADGES
+    if(moodHistory.length >= 1)
+        document.getElementById("badge1").classList.add("active");
+
+    if(moodHistory.length >= 3)
+        document.getElementById("badge2").classList.add("active");
+
+    if(moodHistory.some(m => m.mood === "😔") && moodHistory.some(m => m.mood === "😄"))
+        document.getElementById("badge3").classList.add("active");
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
