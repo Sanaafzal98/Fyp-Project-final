@@ -1,0 +1,3 @@
+*.pt 
+clip_output/ 
+py/clip_cache/ 

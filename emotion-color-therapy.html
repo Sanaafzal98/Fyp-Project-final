@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Emotion Color Release | Premium Edition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root {
+  --accent: #9c8591;
+  --glass: rgba(208, 197, 200, 0.4);
+}
+
+*{
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; touch-action: none;
+}
+
+.back {
+  position: absolute; top: 25px; left: 25px;
+  background: rgb(188, 116, 145); border: none; padding: 10px 18px;
+  border-radius: 50px; color: var(--accent);
+  font-size: 13px; cursor: pointer; font-weight: 500;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.card {
+  width: 95%; max-width: 500px;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 40px; padding: 40px 25px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 40px 100px rgba(0,0,0,0.08);
+}
+
+h1 { color: var(--accent); font-weight: 600; font-size: 24px; margin-bottom: 8px; }
+p { color: #6b3b56; font-size: 14px; margin-bottom: 30px; opacity: 0.8; }
+
+/* EMOTION PILLS */
+.emotions {
+  display: flex; justify-content: center; flex-wrap: wrap;
+  gap: 10px; margin-bottom: 30px;
+}
+
+.emotions button {
+  padding: 10px 22px; border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 30px; background: white;
+  color: var(--accent); cursor: pointer; font-size: 13px;
+  transition: 0.3s all cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.emotions button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(139, 44, 92, 0.15);
+  background: var(--accent); color: white;
+}
+
+/* RELEASE CANVAS AREA */
+.release-area {
+  position: relative; height: 300px;
+  background: var(--glass); border-radius: 30px;
+  overflow: hidden; cursor: grab;
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.5);
+}
+
+/* THE BLOB */
+.blob {
+  width: 100px; height: 100px;
+  border-radius: 50%; position: absolute;
+  top: 50%; left: 50%; margin: -50px 0 0 -50px;
+  filter: blur(8px);
+  animation: pulse 3s infinite alternate;
+  z-index: 10;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); filter: blur(8px); }
+  100% { transform: scale(1.1); filter: blur(12px); }
+}
+
+/* PARTICLES */
+.particle {
+  position: absolute; border-radius: 50%;
+  pointer-events: none; opacity: 0;
+}
+
+.message {
+  margin-top: 25px; font-size: 14px;
+  color: var(--accent); font-weight: 500; height: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<button class="back" onclick="history.back()">← Back</button>
+
+<div class="card">
+  <h1>Emotion Release</h1>
+  <p>Pick a feeling, drag it, and watch it fade away.</p>
+
+  <div class="emotions">
+    <button onclick="createBlob('#ff6b6b', 'Stressed')">Stressed</button>
+    <button onclick="createBlob('#a29bfe', 'Tired')">Tired</button>
+    <button onclick="createBlob('#fab1a0', 'Anxious')">Anxious</button>
+    <button onclick="createBlob('#fdcb6e', 'Heaviness')">Heaviness</button>
+  </div>
+
+  <div class="release-area" id="area">
+    </div>
+
+  <div class="message" id="msg">Choose what you want to let go</div>
+</div>
+
+<script>
+const area = document.getElementById('area');
+const msg = document.getElementById('msg');
+let currentBlob = null;
+
+function createBlob(color, type) {
+  area.innerHTML = '';
+  msg.innerText = `Release the ${type}...`;
+  msg.style.opacity = "1";
+
+  const blob = document.createElement('div');
+  blob.className = 'blob';
+  blob.style.background = `radial-gradient(circle, ${color} 0%, transparent 70%)`;
+  blob.style.boxShadow = `0 0 40px ${color}`;
+  
+  area.appendChild(blob);
+  currentBlob = blob;
+
+  let isDragging = false;
+
+  // Mouse & Touch Events
+  const startDrag = () => { isDragging = true; blob.style.cursor = 'grabbing'; };
+  const stopDrag = () => {
+    if(isDragging) {
+      isDragging = false;
+      explodeBlob(color);
+    }
+  };
+
+  const move = (e) => {
+    if(!isDragging) return;
+    const rect = area.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    
+    // Boundary checks
+    if(x > 0 && x < rect.width && y > 0 && y < rect.height) {
+      blob.style.left = x + 'px';
+      blob.style.top = y + 'px';
+    }
+  };
+
+  blob.addEventListener('mousedown', startDrag);
+  window.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', stopDrag);
+
+  blob.addEventListener('touchstart', startDrag);
+  window.addEventListener('touchmove', move);
+  window.addEventListener('touchend', stopDrag);
+}
+
+function explodeBlob(color) {
+  const rect = currentBlob.getBoundingClientRect();
+  const areaRect = area.getBoundingClientRect();
+  const x = rect.left - areaRect.left + 50;
+  const y = rect.top - areaRect.top + 50;
+
+  // Create 15 particles
+  for(let i=0; i<15; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.width = Math.random() * 10 + 5 + 'px';
+    p.style.height = p.style.width;
+    p.style.background = color;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    area.appendChild(p);
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = Math.random() * 100 + 50;
+    const tx = Math.cos(angle) * velocity;
+    const ty = Math.sin(angle) * velocity;
+
+    p.animate([
+      { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+      { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+    ], {
+      duration: 1000,
+      easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
+    }).onfinish = () => p.remove();
+  }
+
+  currentBlob.style.transform = 'scale(0)';
+  currentBlob.style.opacity = '0';
+  msg.innerText = "It's gone. Breathe in peace. ✨";
+  
+  setTimeout(() => {
+    if(currentBlob) currentBlob.remove();
+  }, 500);
+}
+</script>
+
+</body>
+</html>
